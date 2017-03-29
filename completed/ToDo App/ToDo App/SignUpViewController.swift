@@ -18,6 +18,13 @@ class SignUpViewController: UIViewController {
         let email = emailField.text
         let password = passwordField.text
         FIRAuth.auth()?.createUser(withEmail: email!, password: password!, completion: { (user, error) in
+        if checkForCreateUserError(user, error)
+
+            self.signIn()
+        })
+    }
+    
+    func checkForCreateUserError(error:error) -> boolean {
             if let error = error {
                 if let errCode = FIRAuthErrorCode(rawValue: error._code) {
                     switch errCode {
@@ -29,10 +36,9 @@ class SignUpViewController: UIViewController {
                         self.showAlert("Error: \(error.localizedDescription)")
                     }
                 }
-                return
+                return false
             }
-            self.signIn()
-        })
+            return true
     }
     
     @IBAction func didTapBackToLogin(_ sender: UIButton) {

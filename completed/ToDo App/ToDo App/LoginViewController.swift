@@ -26,6 +26,12 @@ class LoginViewController: UIViewController {
         let email = emailField.text
         let password = passwordField.text
         FIRAuth.auth()?.signIn(withEmail: email!, password: password!, completion: { (user, error) in
+            if self.checkForSignInError(user, error)
+              self.signIn()
+        })
+    }
+    
+    func checkForSignInError(user, error) -> boolean {
             guard let _ = user else {
                 if let error = error {
                     if let errCode = FIRAuthErrorCode(rawValue: error._code) {
@@ -38,13 +44,11 @@ class LoginViewController: UIViewController {
                             self.showAlert("Error: \(error.localizedDescription)")
                         }
                     }
-                    return
+                    return false
                 }
                 assertionFailure("user and error are nil")
             }
-
-            self.signIn()
-        })
+            return true
     }
 
     @IBAction func didRequestPasswordReset(_ sender: UIButton) {
@@ -55,7 +59,16 @@ class LoginViewController: UIViewController {
                 return
             }
             FIRAuth.auth()?.sendPasswordReset(withEmail: userInput!, completion: { (error) in
-                if let error = error {
+            checkForPasswordResetError(error:error)
+            })
+        }
+        prompt.addTextField(configurationHandler: nil)
+        prompt.addAction(okAction)
+        present(prompt, animated: true, completion: nil)
+    }
+
+func checkForPasswordResetError(error:error) -> boolean {
+if let error = error {
                     if let errCode = FIRAuthErrorCode(rawValue: error._code) {
                         switch errCode {
                         case .errorCodeUserNotFound:
@@ -68,18 +81,14 @@ class LoginViewController: UIViewController {
                             }
                         }
                     }
-                    return
+                    return false
                 } else {
                     DispatchQueue.main.async {
                         self.showAlert("You'll receive an email shortly to reset your password.")
                     }
                 }
-            })
-        }
-        prompt.addTextField(configurationHandler: nil)
-        prompt.addAction(okAction)
-        present(prompt, animated: true, completion: nil)
-    }
+                return true
+}
 
     func showAlert(_ message: String) {
         let alertController = UIAlertController(title: "To Do App", message: message, preferredStyle: UIAlertControllerStyle.alert)
