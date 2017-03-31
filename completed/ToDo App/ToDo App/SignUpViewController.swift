@@ -17,28 +17,28 @@ class SignUpViewController: UIViewController {
     @IBAction func didTapSignUp(_ sender: UIButton) {
         let email = emailField.text
         let password = passwordField.text
-        FIRAuth.auth()?.createUser(withEmail: email!, password: password!, completion: { (user, error) in
-        if checkForCreateUserError(user, error)
-
-            self.signIn()
+        FIRAuth.auth()?.createUser(withEmail: email!, password: password!, completion: { (user:FIRUser?, error:Error?) in
+            if self.checkForCreateUserError(user: user, error: error) {
+                self.signIn()
+            }
         })
     }
     
-    func checkForCreateUserError(error:error) -> boolean {
-            if let error = error {
-                if let errCode = FIRAuthErrorCode(rawValue: error._code) {
-                    switch errCode {
-                    case .errorCodeInvalidEmail:
-                        self.showAlert("Enter a valid email.")
-                    case .errorCodeEmailAlreadyInUse:
-                        self.showAlert("Email already in use.")
-                    default:
-                        self.showAlert("Error: \(error.localizedDescription)")
-                    }
+    func checkForCreateUserError(user:FIRUser?, error:Error?) -> Bool {
+        if let error = error {
+            if let errCode = FIRAuthErrorCode(rawValue: error._code) {
+                switch errCode {
+                case .errorCodeInvalidEmail:
+                    self.showAlert("Enter a valid email.")
+                case .errorCodeEmailAlreadyInUse:
+                    self.showAlert("Email already in use.")
+                default:
+                    self.showAlert("Error: \(error.localizedDescription)")
                 }
-                return false
             }
-            return true
+            return false
+        }
+        return true
     }
     
     @IBAction func didTapBackToLogin(_ sender: UIButton) {

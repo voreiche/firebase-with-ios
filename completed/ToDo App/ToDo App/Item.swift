@@ -13,12 +13,14 @@ class Item {
     
     var ref: FIRDatabaseReference?
     var title: String?
+    var completed: Bool?
     
     init (snapshot: FIRDataSnapshot) {
         ref = snapshot.ref
         
-        let data = snapshot.value as! Dictionary<String, String>
-        title = data["title"]! as String
+        let data = snapshot.value as! Dictionary<String, Any>
+        title = data["title"] as! String?
+        completed = data["completed"] as! Bool?
     }
-    
+        
 }

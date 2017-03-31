@@ -5,6 +5,6 @@ use_frameworks!
 
 pod 'Firebase/Auth'
 pod 'Firebase/Database'
-Pod 'Firebase/Core'
+pod 'Firebase/Core'
 
 end

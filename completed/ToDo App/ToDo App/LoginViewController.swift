@@ -10,47 +10,49 @@ import UIKit
 import FirebaseAuth
 
 class LoginViewController: UIViewController {
-
+    
     @IBOutlet weak var emailField: UITextField!
     @IBOutlet weak var passwordField: UITextField!
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
+        
         if let _ = FIRAuth.auth()?.currentUser {
             self.signIn()
         }
     }
-
+    
     @IBAction func didTapSignIn(_ sender: UIButton) {
         let email = emailField.text
         let password = passwordField.text
         FIRAuth.auth()?.signIn(withEmail: email!, password: password!, completion: { (user, error) in
-            if self.checkForSignInError(user, error)
-              self.signIn()
+            if self.checkForSignInError(user: user, error: error) {
+                self.signIn()
+            }
         })
     }
     
-    func checkForSignInError(user, error) -> boolean {
-            guard let _ = user else {
-                if let error = error {
-                    if let errCode = FIRAuthErrorCode(rawValue: error._code) {
-                        switch errCode {
-                        case .errorCodeUserNotFound:
-                            self.showAlert("User account not found. Try registering")
-                        case .errorCodeWrongPassword:
-                            self.showAlert("Incorrect username/password combination")
-                        default:
-                            self.showAlert("Error: \(error.localizedDescription)")
-                        }
+    func checkForSignInError(user: FIRUser?, error: Error?) -> Bool {
+        guard let _ = user else {
+            if let error = error {
+                if let errCode = FIRAuthErrorCode(rawValue: error._code) {
+                    switch errCode {
+                    case .errorCodeUserNotFound:
+                        self.showAlert("User account not found. Try registering")
+                    case .errorCodeWrongPassword:
+                        self.showAlert("Incorrect username/password combination")
+                    default:
+                        self.showAlert("Error: \(error.localizedDescription)")
                     }
-                    return false
                 }
-                assertionFailure("user and error are nil")
+                return false
             }
-            return true
+            assertionFailure("user and error are nil")
+            return false
+        }
+        return true
     }
-
+    
     @IBAction func didRequestPasswordReset(_ sender: UIButton) {
         let prompt = UIAlertController(title: "To Do App", message: "Email:", preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
@@ -59,45 +61,45 @@ class LoginViewController: UIViewController {
                 return
             }
             FIRAuth.auth()?.sendPasswordReset(withEmail: userInput!, completion: { (error) in
-            checkForPasswordResetError(error:error)
+                self.checkForPasswordResetError(error:error)
             })
         }
         prompt.addTextField(configurationHandler: nil)
         prompt.addAction(okAction)
         present(prompt, animated: true, completion: nil)
     }
-
-func checkForPasswordResetError(error:error) -> boolean {
-if let error = error {
-                    if let errCode = FIRAuthErrorCode(rawValue: error._code) {
-                        switch errCode {
-                        case .errorCodeUserNotFound:
-                            DispatchQueue.main.async {
-                                self.showAlert("User account not found. Try registering")
-                            }
-                        default:
-                            DispatchQueue.main.async {
-                                self.showAlert("Error: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                    return false
-                } else {
+    
+    func checkForPasswordResetError(error:Error?) -> Bool {
+        if let error = error {
+            if let errCode = FIRAuthErrorCode(rawValue: error._code) {
+                switch errCode {
+                case .errorCodeUserNotFound:
                     DispatchQueue.main.async {
-                        self.showAlert("You'll receive an email shortly to reset your password.")
+                        self.showAlert("User account not found. Try registering")
+                    }
+                default:
+                    DispatchQueue.main.async {
+                        self.showAlert("Error: \(error.localizedDescription)")
                     }
                 }
-                return true
-}
-
+            }
+            return false
+        } else {
+            DispatchQueue.main.async {
+                self.showAlert("You'll receive an email shortly to reset your password.")
+            }
+        }
+        return true
+    }
+    
     func showAlert(_ message: String) {
         let alertController = UIAlertController(title: "To Do App", message: message, preferredStyle: UIAlertControllerStyle.alert)
         alertController.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default,handler: nil))
         self.present(alertController, animated: true, completion: nil)
     }
-
+    
     func signIn() {
         performSegue(withIdentifier: "SignInFromLogin", sender: nil)
     }
-
+    
 }
